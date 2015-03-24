@@ -2,13 +2,12 @@
 #include <string.h>
 
 #include <trie.h>
+#include <map.h>
 #include <debug.h>
 
 struct TrieNode {
-	/* NULL for leafs or pointer to linked list of children */
-	struct TrieNode* children;
-	/* NULL-terminated linked list of children */
-	struct TrieNode* next;
+	/* NULL for leafs or pointer to Map of children */
+	Map children;
 	/* "Maybe a", aka NULL or valid pointer (not all keys have values along the way) */
 	void* value;
 	/* Map key */
@@ -18,7 +17,14 @@ struct TrieNode {
 Trie
 trie_new()
 {
-	return calloc(1, sizeof(struct TrieNode));
+	Trie t = calloc(1, sizeof(struct TrieNode));
+
+	if (t && !(t->children = map_new('?', NULL))) {
+		free(t);
+		return NULL;
+	}
+
+	return t;
 }
 
 Trie
@@ -33,6 +39,14 @@ trie_copy(Trie src)
 	return dest;
 }
 
+static void
+trie_delete_recur(void* value, void* arg)
+{
+	if (value) {
+		trie_delete((Trie) value);
+	}
+}
+
 void
 trie_delete(Trie trie)
 {
@@ -40,12 +54,9 @@ trie_delete(Trie trie)
 		return;
 	}
 
-	if (trie->next) {
-		trie_delete(trie->next);
-	}
-
 	if (trie->children) {
-		trie_delete(trie->children);
+		map_for_each(trie->children, trie_delete_recur, NULL);
+		map_delete(trie->children);
 	}
 
 	free(trie);
@@ -62,14 +73,7 @@ trie_get(Trie trie, const char* key)
 		return trie->value;
 	}
 
-	Trie child = trie->children;
-	for (; child; child = child->next) {
-		if (child->key == *key) {
-			break;
-		}
-	}
-
-	return trie_get(child, key + 1);
+	return trie_get(map_get(trie->children, *key), key + 1);
 }
 
 Trie
@@ -84,13 +88,7 @@ trie_set(Trie trie, const char* key, void* value)
 		return trie;
 	}
 
-	Trie child = trie->children;
-	for (; child; child = child->next) {
-		if (child->key == *key) {
-			break;
-		}
-	}
-
+	Trie child = map_get(trie->children, *key);
 	if (!child) {
 		if (!(child = trie_new())) {
 			/* OUT OF MEMORY */
@@ -98,43 +96,70 @@ trie_set(Trie trie, const char* key, void* value)
 		}
 
 		child->key = *key;
-		/* Insert at the head of list */
-		child->next = trie->children;
-		trie->children = child;
+		map_set(trie->children, *key, child);
 	}
 
 	return trie_set(child, key + 1, value);
 }
 
+typedef struct {
+	TrieFunc f;
+	void* arg;
+} TrieFuncClosure;
+
 static void
-trie_repr(Trie trie)
+trie_for_each_recur(void* value, void* arg)
+{
+	if (value && arg) {
+		TrieFuncClosure* closure = arg;
+		trie_for_each((Trie) value, closure->f, closure->arg);
+	}
+}
+
+void
+trie_for_each(Trie trie, TrieFunc f, void* arg)
+{
+	if (!trie || !f) {
+		return;
+	}
+
+	f(trie->value, arg);
+
+	if (trie->children) {
+		map_for_each(trie->children, trie_for_each_recur, (void*) &((TrieFuncClosure) {
+			f, arg,
+		}));
+	}
+}
+
+typedef struct {
+	ValueReprFunc f;
+} ValueReprFuncCont;
+
+static void
+trie_repr_recur(void* value, void* arg)
+{
+	if (value && arg) {
+		trie_repr(value, ((ValueReprFuncCont*) arg)->f);
+	}
+}
+
+#include <stdio.h>
+
+void
+trie_repr(Trie trie, ValueReprFunc f)
 {
 	if (!trie) {
 		return;
 	}
-
-	printf("<TrieNode '%c' = %p at %p>\n", trie->key, trie->value, (void*) trie);
-	trie_repr(trie->next);
-	trie_repr(trie->children);
-}
-
-#ifdef TEST
-#include <stdio.h>
-
-int
-main(int argc, char* argv[]) {
-	Trie t = trie_new();
-	for (int i = 1; (i + 1) < argc; i += 2) {
-		trie_set(t, argv[i], argv[i + 1]);
-		const char* v = trie_get(t, argv[i]);
-		if (!v || v != argv[i + 1]) {
-			fprintf(stderr, "%s != %s", v ? v : "(nil)", argv[i]);
-			exit(EXIT_FAILURE);
-		}
+	
+	if (f) {
+		f(trie->value);
+	} else {
+		printf("<TrieNode '%c' = %p at %p>\n", trie->key, trie->value, (void*) trie);
 	}
-	trie_repr(t);
-	trie_delete(t);
-	return 0;
-}
 
-#endif
+	map_for_each(trie->children, trie_repr_recur, &((ValueReprFuncCont) {
+		f,
+	}));
+}

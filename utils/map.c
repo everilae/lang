@@ -83,45 +83,27 @@ map_get(Map map, MapKey key)
 	return map->value;
 }
 
-#ifdef TEST
-
-#include <string.h>
-
-int
-main(void)
+void
+map_repr(Map map, void (*value_repr)(const void* value))
 {
-	Map m = map_new(7, "7");
-
-	map_set(m, 10, "10");
-	map_set(m, 5, "5");
-	map_set(m, 20, "20");
-
-	const char* s = NULL;
-
-#define TEST_VAL(val) \
-	s = map_get(m, val); \
-	if (s && !strcmp(s, #val)) { \
-		printf("%s\n", s); \
-	} else { \
-		printf("%s != %s\n", s ? s : "(nil)", #val); \
-		exit(EXIT_FAILURE); \
+	if (!map || !value_repr) {
+		return;
 	}
 
-	TEST_VAL(5)
-	TEST_VAL(10)
-	TEST_VAL(20)
-	TEST_VAL(7)
-
-#define TEST_NOT_VAL(val) \
-	s = map_get(m, val); \
-	if (s) { \
-		printf("Whoa, " #val " should not be\n"); \
-		exit(EXIT_FAILURE); \
-	}
-
-	TEST_NOT_VAL(100)
-
-	map_delete(m);
+	map_repr(map->left, value_repr);
+	printf("%d -> ", map->key);
+	value_repr(map->value);
+	map_repr(map->right, value_repr);
 }
 
-#endif
+void
+map_for_each(Map map, MapFunc f, void* arg)
+{
+	if (!map || !f) {
+		return;
+	}
+
+	map_for_each(map->left, f, arg);
+	f(map->value, arg);
+	map_for_each(map->right, f, arg);
+}
