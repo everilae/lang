@@ -1,4 +1,5 @@
 CFLAGS = -g -std=c11 -Wall -pedantic -I. -I../ -I../include -I../utils -O2
+VALGRIND = $(shell which valgrind)
 
 vpath %.h ../include:../utils
 vpath %.c ../objects:../utils
@@ -12,8 +13,8 @@ tests: test_lang test_map test_trie test_list
 
 test_%: test_%.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	valgrind -q ./$@
-	rm -f $@
+	$(VALGRIND) -q ./$@
+	$(RM) $@
 
 test_lang: object.o str.o int.o bool.o selector.o type.o msg_send.o
 
@@ -25,4 +26,4 @@ test_map: map.o
 
 .PHONY: clean
 clean:
-	rm -f *.o
+	$(RM) *.o

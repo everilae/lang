@@ -13,5 +13,5 @@ tests:
 
 .PHONY: clean
 clean:
-	rm -f *.o
+	$(RM) *.o
 	$(MAKE) -C tests clean
