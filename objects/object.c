@@ -70,9 +70,9 @@ msg_send(Object* obj, SEL cmd, ...)
 		goto noimpl;
 	}
 
-	register uintptr_t rsp __asm__("r12");
+	register uintptr_t rsp asm("r12");
 
-	__asm__ __volatile__ (
+	asm volatile (
 		/* Save arguments */
 		"pushq\t%%rdi\n\t"
 		"pushq\t%%rsi\n\t"
@@ -89,9 +89,9 @@ msg_send(Object* obj, SEL cmd, ...)
 		:
 	);
 
-	register IMP imp __asm__("r11") = get_implementation(ObType(obj), cmd);
+	register IMP imp asm("r11") = get_implementation(ObType(obj), cmd);
 
-	__asm__ __volatile__ (
+	asm volatile (
 		/* Restore stack pointer */
 		"movq\t%0, %%rsp\n\t"
 		/* Restore args */
@@ -106,7 +106,7 @@ msg_send(Object* obj, SEL cmd, ...)
 	);
 
 	/* trampoline */
-	__asm__ __volatile__ goto (
+	asm volatile goto (
 		"cmpq\t$0, %0\n\t"
 		"je %l[noimpl]\n\t"
 		"popq\t%%r12\n\t"
