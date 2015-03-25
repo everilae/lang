@@ -5,7 +5,7 @@ vpath %.c ../objects:../utils
 vpath %.s ../asm
 
 .PHONY: all
-all:
+all: tests
 
 .PHONY: tests
 tests: test_lang test_map test_trie test_list

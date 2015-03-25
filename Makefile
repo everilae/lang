@@ -9,7 +9,7 @@ all:
 
 .PHONY: tests
 tests:
-	$(MAKE) -C tests tests
+	$(MAKE) -C tests
 
 .PHONY: clean
 clean:
