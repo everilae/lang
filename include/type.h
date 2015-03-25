@@ -5,7 +5,7 @@
 #include <selector.h>
 
 typedef struct Type {
-	struct Type* class;
+	OBJECT_HEAD;
 	struct Type* base;
 	const char* name;
 

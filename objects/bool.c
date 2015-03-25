@@ -28,11 +28,11 @@ Type BoolType = {
 };
 
 Object* True = ObPtr(&((Int) {
-	&BoolType,
+	OBJECT_INITIALIZER(BoolType),
 	1,
 }));
 
 Object* False = ObPtr(&((Int) {
-	&BoolType,
+	OBJECT_INITIALIZER(BoolType),
 	0,
 }));

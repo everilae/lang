@@ -15,6 +15,10 @@ typedef struct {
 extern Type SelectorType;
 
 #define selector(cmd) (#cmd)
-#define SELECTOR(cmd, imp) {&SelectorType, selector(cmd), (IMP) imp}
+#define SELECTOR(cmd_, imp_) { \
+	OBJECT_INITIALIZER(SelectorType), \
+	.cmd = selector(cmd_), \
+	.imp = (IMP) imp_ \
+}
 
 #endif

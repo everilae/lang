@@ -1,4 +1,4 @@
-CFLAGS = -g -std=gnu11 -Wall -Werror -pedantic -I. -I../ -I../include -I../utils -O2
+CFLAGS = -g -std=gnu11 -pthread -Wall -Werror -pedantic -I. -I../ -I../include -I../utils -O2
 VALGRIND = $(shell which valgrind)
 
 vpath %.h ../include:../utils

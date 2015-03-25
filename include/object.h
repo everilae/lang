@@ -4,9 +4,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <pthread.h>
+
+typedef struct {
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+} Monitor;
+
+#define MONITOR_INITIALIZER \
+	.monitor.mutex = PTHREAD_MUTEX_INITIALIZER, \
+	.monitor.cond = PTHREAD_COND_INITIALIZER
 
 #define OBJECT_HEAD \
-	struct Type* class
+	struct Type* class; \
+	Monitor monitor
+
+#define OBJECT_INITIALIZER(cls) \
+	.class = &cls, \
+	MONITOR_INITIALIZER
 
 typedef struct Type Type;
 

@@ -147,7 +147,7 @@ Object_repr(Object* this, SEL cmd)
 }
 
 Type ObjectType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
 	.base = NULL,
 	.name = "object",
 

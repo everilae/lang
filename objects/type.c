@@ -18,7 +18,7 @@ Type_repr(Object* this, va_list ap)
 }
 
 Type TypeType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
 	.base = &ObjectType,
 	.name = "type",
 
