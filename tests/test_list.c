@@ -11,6 +11,4 @@ main(void)
 	repr_list(list, repr_int_cons);
 	assert(FIRST(list, int) == 123);
 	assert(FIRST(REST(list), int) == 345);
-
-	return 0;
 }

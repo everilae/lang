@@ -1,31 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
+
 #include <trie.h>
 
+static char* pairs[][2] = {
+	{"asdf", "foo"},
+	{"asdg", "bar"},
+	{"asdd", "baz"},
+	{"zsdf", "bard"},
+	{"Zsdf", "gar"},
+	{"Zsrf", "har"},
+	{"zcvb", "sar"},
+	{NULL, NULL},
+};
+
 int
-main(int argc, char* argv[]) {
+main(int argc, char* argv[])
+{
 	Trie t = trie_new();
-	for (int i = 1; (i + 1) < argc; i += 2) {
-		Trie n = trie_set(t, argv[i], argv[i + 1]);
-
-		if (!n) {
-			printf("trie_set() failed");
-			exit(EXIT_FAILURE);
-		}
-
-		const char* v = trie_get(t, argv[i]);
-		if (!v || v != argv[i + 1]) {
-			printf("%s != %s\n", v ? v : "(nil)", argv[i]);
-			exit(EXIT_FAILURE);
-		}
+	for (size_t i = 0; pairs[i][0]; i++) {
+		assert(trie_set(t, pairs[i][0], pairs[i][1]) != NULL);
+		assert(trie_get(t, pairs[i][0]) == pairs[i][1]);
 	}
-
-	if (trie_get(t, "SHOULDNOTBE")) {
-		printf("Should not be\n");
-		exit(EXIT_FAILURE);
-	}
-
+	assert(trie_get(t, "SHOULDNOTBE") == NULL);
 	trie_repr(t, NULL);
 	trie_delete(t);
-	return 0;
 }

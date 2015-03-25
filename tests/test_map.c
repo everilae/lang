@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <assert.h>
 
 #include <map.h>
 
@@ -14,40 +16,28 @@ int
 main(void)
 {
 	Map m = map_new(7, "7");
-
-	map_set(m, 10, "10");
-	map_set(m, 5, "5");
-	map_set(m, 20, "20");
+	assert(m != NULL);
+	assert(map_set(m, 10, "10") != NULL);
+	assert(map_set(m, 5, "5") != NULL);
+	assert(map_set(m, 20, "20") != NULL);
 
 	const char* s = NULL;
 
-#define TEST_VAL(val) \
-	s = map_get(m, val); \
-	if (s && !strcmp(s, #val)) { \
-		printf("%s\n", s); \
-	} else { \
-		printf("%s != %s\n", s ? s : "(nil)", #val); \
-		exit(EXIT_FAILURE); \
-	}
+#define TEST_VAL(val) s = map_get(m, val); assert(s && !strcmp(s, #val))
 
-	TEST_VAL(5)
-	TEST_VAL(10)
-	TEST_VAL(20)
-	TEST_VAL(7)
+	TEST_VAL(5);
+	TEST_VAL(10);
+	TEST_VAL(20);
+	TEST_VAL(7);
 
-#define TEST_NOT_VAL(val) \
-	s = map_get(m, val); \
-	if (s) { \
-		printf("Whoa, " #val " should not be\n"); \
-		exit(EXIT_FAILURE); \
-	}
+#define TEST_NOT_VAL(val) assert(map_get(m, val) == NULL)
 
-	TEST_NOT_VAL(100)
+	TEST_NOT_VAL(100);
+	TEST_NOT_VAL(0);
+	TEST_NOT_VAL(INT_MAX);
+	TEST_NOT_VAL(INT_MIN);
 
-	if (map_set(NULL, 1, "1")) {
-		printf("map_set(NULL, ...) did not return NULL\n");
-		exit(EXIT_FAILURE);
-	}
+	assert(map_set(NULL, 1, "1") == NULL);
 
 	map_repr(m, string_repr);
 	map_delete(m);
