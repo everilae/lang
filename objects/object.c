@@ -62,18 +62,65 @@ get_implementation(Type* class, SEL cmd)
 
 	return imp;
 }
-/*
+
 Object*
 msg_send(Object* obj, SEL cmd, ...)
 {
-	IMP imp = get_implementation(ObType(obj), cmd);
-	if (imp) {
-		/ * trampoline * /
-		__asm__ __volatile__ ("jmp\t*%0\n\t" :: "r"(imp));
+	if (!obj) {
+		goto noimpl;
 	}
+
+	register uintptr_t rsp __asm__("r12");
+
+	__asm__ __volatile__ (
+		/* Save arguments */
+		"pushq\t%%rdi\n\t"
+		"pushq\t%%rsi\n\t"
+		"pushq\t%%rdx\n\t"
+		"pushq\t%%rcx\n\t"
+		"pushq\t%%r8\n\t"
+		"pushq\t%%r9\n\t"
+		"pushq\t%%rax\n\t"
+		/* Save stack pointer, pray to god no functions touch r12 */
+		"movq\t%%rsp, %0\n\t"
+		/* Clear bottom 4 bits, moves stack up and aligns */
+		"andq\t$-0x10, %%rsp\n\t"
+		: "=r"(rsp)
+		:
+	);
+
+	register IMP imp __asm__("r11") = get_implementation(ObType(obj), cmd);
+
+	__asm__ __volatile__ (
+		/* Restore stack pointer */
+		"movq\t%0, %%rsp\n\t"
+		/* Restore args */
+		"popq\t%%rax\n\t"
+		"popq\t%%r9\n\t"
+		"popq\t%%r8\n\t"
+		"popq\t%%rcx\n\t"
+		"popq\t%%rdx\n\t"
+		"popq\t%%rsi\n\t"
+		"popq\t%%rdi\n\t"
+		:: "r"(rsp)
+	);
+
+	/* trampoline */
+	__asm__ __volatile__ goto (
+		"cmpq\t$0, %0\n\t"
+		"je %l[noimpl]\n\t"
+		"popq\t%%r12\n\t"
+		"jmp\t*%0\n\t"
+		:
+		: "r"(imp)
+		:
+		: noimpl
+	);
+
+noimpl:
 	return NULL;
 }
-*/
+
 void
 Object_new(Object* this, va_list ap)
 {

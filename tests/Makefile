@@ -16,7 +16,7 @@ test_%: test_%.o
 	$(VALGRIND) -q ./$@
 	$(RM) $@
 
-test_lang: object.o str.o int.o bool.o selector.o type.o msg_send.o
+test_lang: object.o str.o int.o bool.o selector.o type.o
 
 test_trie: trie.o map.o
 
