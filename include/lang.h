@@ -4,7 +4,6 @@
 #include <object.h>
 #include <selector.h>
 #include <type.h>
-#include <none.h>
 #include <int.h>
 #include <bool.h>
 #include <str.h>
