@@ -10,21 +10,18 @@ all:
 .PHONY: tests
 tests: test_lang test_map test_trie test_list
 
-test_lang: test_lang.o object.o str.o int.o bool.o selector.o type.o msg_send.o
+test_%: test_%.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
 	valgrind -q ./$@
+	rm -f $@
 
-test_trie: test_trie.o trie.o map.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	valgrind -q ./$@
+test_lang: object.o str.o int.o bool.o selector.o type.o msg_send.o
 
-test_list: test_list.o list.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	valgrind -q ./$@
+test_trie: trie.o map.o
 
-test_map: test_map.o map.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	valgrind -q ./$@
+test_list: list.o
+
+test_map: map.o
 
 .PHONY: clean
 clean:
