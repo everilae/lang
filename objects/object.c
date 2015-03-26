@@ -1,10 +1,7 @@
-#include <object.h>
-#include <debug.h>
-#include <inttypes.h>
-#include <stdarg.h>
 #include <string.h>
 
 #include <lang.h>
+#include <debug.h>
 
 void*
 new(Type* class, ...)
@@ -49,9 +46,13 @@ delete(Object* o)
 IMP
 get_implementation(Type* class, SEL cmd)
 {
-	IMP imp = NULL;
+	register IMP imp = NULL;
 	while (class && !imp) {
-		for (Selector* sel = class->selectors; sel && sel->class; sel++) {
+		for (
+			register Selector* sel = class->selectors;
+			sel && sel->class;
+			sel++
+		) {
 			if (cmd == sel->cmd) {
 				imp = sel->imp;
 				break;
@@ -70,8 +71,6 @@ msg_send(Object* obj, SEL cmd, ...)
 		goto noimpl;
 	}
 
-	register uintptr_t rsp asm("r12");
-
 	asm volatile (
 		/* Save arguments */
 		"pushq\t%%rdi\n\t"
@@ -81,19 +80,12 @@ msg_send(Object* obj, SEL cmd, ...)
 		"pushq\t%%r8\n\t"
 		"pushq\t%%r9\n\t"
 		"pushq\t%%rax\n\t"
-		/* Save stack pointer, pray to god no functions touch r12 */
-		"movq\t%%rsp, %0\n\t"
-		/* Clear bottom 4 bits, moves stack up and aligns */
-		"andq\t$-0x10, %%rsp\n\t"
-		: "=r"(rsp)
-		:
+		::
 	);
 
-	register IMP imp asm("r11") = get_implementation(ObType(obj), cmd);
+	register IMP imp = get_implementation(ObType(obj), cmd);
 
 	asm volatile (
-		/* Restore stack pointer */
-		"movq\t%0, %%rsp\n\t"
 		/* Restore args */
 		"popq\t%%rax\n\t"
 		"popq\t%%r9\n\t"
@@ -102,19 +94,20 @@ msg_send(Object* obj, SEL cmd, ...)
 		"popq\t%%rdx\n\t"
 		"popq\t%%rsi\n\t"
 		"popq\t%%rdi\n\t"
-		:: "r"(rsp)
+		:
+		:
+		: "rax", "r9", "r8", "rcx", "rdx", "rsi", "rdi"
 	);
 
+	if (!imp) {
+		goto noimpl;
+	}
+
 	/* trampoline */
-	asm volatile goto (
-		"cmpq\t$0, %0\n\t"
-		"je %l[noimpl]\n\t"
-		"popq\t%%r12\n\t"
+	asm volatile (
 		"jmp\t*%0\n\t"
 		:
 		: "r"(imp)
-		:
-		: noimpl
 	);
 
 noimpl:
@@ -146,8 +139,25 @@ Object_repr(Object* this, SEL cmd)
 	return NULL;
 }
 
+static Object*
+Object_wait(Object* this, SEL cmd)
+{
+	if (this->monitor) {
+	}
+	return NULL;
+}
+
+static Object*
+Object_notify(Object* this, SEL cmd)
+{
+	if (this->monitor) {
+	}
+	return NULL;
+}
+
 Type ObjectType = {
 	OBJECT_INITIALIZER(TypeType),
+
 	.base = NULL,
 	.name = "object",
 
@@ -156,9 +166,10 @@ Type ObjectType = {
 	.new = Object_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
+	.selectors = SELECTOR_LIST(
 		SELECTOR(eq, Object_eq),
 		SELECTOR(repr, Object_repr),
-		{0},
-	})
+		SELECTOR(wait, Object_wait),
+		SELECTOR(notify, Object_notify)
+	),
 };

@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include <lang.h>
 
 Type IntType;
@@ -45,7 +43,8 @@ INT_OP(mul, *)
 INT_OP(div, /)
 
 Type IntType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
+
 	.base = &ObjectType,
 	.name = "int",
 
@@ -54,13 +53,12 @@ Type IntType = {
 	.new = Int_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
+	.selectors = SELECTOR_LIST(
 		SELECTOR(eq, Int_eq),
 		SELECTOR(repr, Int_repr),
 		SELECTOR(add, Int_add),
 		SELECTOR(sub, Int_sub),
 		SELECTOR(mul, Int_mul),
-		SELECTOR(div, Int_div),
-		{0}
-	}),
+		SELECTOR(div, Int_div)
+	),
 };

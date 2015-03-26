@@ -11,4 +11,8 @@
 extern Object* msg_send(Object* obj, SEL cmd, ...);
 extern IMP get_implementation(Type* class, SEL cmd);
 
+#include <stdio.h>
+#include <stdlib.h>
+#define ABORT(...) do { fprintf(stderr, __VA_ARGS__); abort(); } while (0)
+
 #endif

@@ -10,4 +10,6 @@ typedef struct {
 
 extern Type StrType;
 
+#define StrPtr(p) ((Str*) p)
+
 #endif

@@ -12,7 +12,8 @@ Bool_repr(Object* this, va_list ap)
 }
 
 Type BoolType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
+
 	.base = &IntType,
 	.name = "bool",
 
@@ -21,18 +22,17 @@ Type BoolType = {
 	.new = Int_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
-		SELECTOR(repr, Bool_repr),
-		{0}
-	}),
+	.selectors = SELECTOR_LIST(
+		SELECTOR(repr, Bool_repr)
+	),
 };
 
 Object* True = ObPtr(&((Int) {
 	OBJECT_INITIALIZER(BoolType),
-	1,
+	.value = 1,
 }));
 
 Object* False = ObPtr(&((Int) {
 	OBJECT_INITIALIZER(BoolType),
-	0,
+	.value = 0,
 }));

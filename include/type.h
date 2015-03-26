@@ -1,6 +1,8 @@
 #ifndef TYPE_H
 #define TYPE_H 1
 
+#include <stddef.h>
+
 #include <object.h>
 #include <selector.h>
 

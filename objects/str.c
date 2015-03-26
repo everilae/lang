@@ -1,9 +1,6 @@
-#include <stdio.h>
 #include <string.h>
 
 #include <lang.h>
-
-#define StrPtr(p) ((Str*) p)
 
 Type StrType;
 
@@ -31,7 +28,8 @@ Str_repr(Str* this, SEL cmd)
 }
 
 Type StrType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
+
 	.base = &ObjectType,
 	.name = "str",
 
@@ -40,9 +38,8 @@ Type StrType = {
 	.new = Str_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
+	.selectors = SELECTOR_LIST( 
 		SELECTOR(eq, Str_eq),
-		SELECTOR(repr, Str_repr),
-		{0},
-	}),
+		SELECTOR(repr, Str_repr)
+	),
 };

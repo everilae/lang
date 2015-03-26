@@ -1,5 +1,4 @@
-#include <type.h>
-#include <selector.h>
+#include <lang.h>
 
 static void
 Type_new(Object* this_, va_list ap)
@@ -19,6 +18,7 @@ Type_repr(Object* this, va_list ap)
 
 Type TypeType = {
 	OBJECT_INITIALIZER(TypeType),
+
 	.base = &ObjectType,
 	.name = "type",
 
@@ -27,8 +27,7 @@ Type TypeType = {
 	.new = Type_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
-		SELECTOR(repr, Type_repr),
-		{0},
-	})
+	.selectors = SELECTOR_LIST(
+		SELECTOR(repr, Type_repr)
+	)
 };

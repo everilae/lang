@@ -20,5 +20,7 @@ extern Type SelectorType;
 	.cmd = selector(cmd_), \
 	.imp = (IMP) imp_ \
 }
+#define SELECTOR_LIST_END {NULL}
+#define SELECTOR_LIST(...) ((Selector[]) {__VA_ARGS__, SELECTOR_LIST_END})
 
 #endif

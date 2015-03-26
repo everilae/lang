@@ -1,5 +1,4 @@
-#include <selector.h>
-#include <type.h>
+#include <lang.h>
 
 static void
 Selector_new(Object* this, va_list ap)
@@ -14,7 +13,8 @@ Selector_repr(Selector* this, SEL cmd)
 }
 
 Type SelectorType = {
-	.class = &TypeType,
+	OBJECT_INITIALIZER(TypeType),
+
 	.base = &ObjectType,
 	.name = "selector",
 
@@ -23,8 +23,7 @@ Type SelectorType = {
 	.new = Selector_new,
 	.delete = Object_delete,
 
-	.selectors = ((Selector[]) {
-		SELECTOR(repr, Selector_repr),
-		{0},
-	}),
+	.selectors = SELECTOR_LIST(
+		SELECTOR(repr, Selector_repr)
+	),
 };
