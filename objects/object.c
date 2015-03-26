@@ -3,43 +3,6 @@
 #include <lang.h>
 #include <debug.h>
 
-void*
-new(Type* class, ...)
-{
-	void* o;
-	if (class->alloc) {
-		o = class->alloc(class);
-	} else {
-		o = calloc(1, class->size);
-	}
-
-	if (!o) {
-		return NULL;
-	}
-
-	ObType(o) = class;
-	va_list ap;
-	va_start(ap, class);
-	class->new(o, ap);
-	va_end(ap);
-
-	return o;
-}
-
-void
-delete(Object* o)
-{
-	if (!o) {
-		return;
-	}
-
-	if (ObType(o)->delete) {
-		ObType(o)->delete(o);
-	}
-
-	free(o);
-}
-
 /**
  * Called from asm.
  */
@@ -114,16 +77,17 @@ noimpl:
 	return NULL;
 }
 
-void
-Object_new(Object* this, va_list ap)
+static Object*
+Object_init(Object* this)
 {
-	DPRINTF("new(%s)\n", ObType(this)->name);
+	return this;
 }
 
-void
-Object_delete(Object* this)
+static Object*
+Object_dealloc(Object* this)
 {
-	DPRINTF("delete(%s)\n", ObType(this)->name);
+	free(this);
+	return NULL;
 }
 
 static Object*
@@ -155,6 +119,18 @@ Object_notify(Object* this, SEL cmd)
 	return NULL;
 }
 
+static Object*
+Object_performSelector(Object* this, SEL cmd, SEL sel)
+{
+	return msg_send(this, sel);
+}
+
+static Object*
+Object_respondsToSelector(Object* this, SEL cmd, SEL sel)
+{
+	return Bool(get_implementation(ObType(this), sel));
+}
+
 Type ObjectType = {
 	OBJECT_INITIALIZER(TypeType),
 
@@ -163,13 +139,14 @@ Type ObjectType = {
 
 	.size = sizeof(Object),
 
-	.new = Object_new,
-	.delete = Object_delete,
-
 	.selectors = SELECTOR_LIST(
-		SELECTOR(eq, Object_eq),
+		SELECTOR(init, Object_init),
+		SELECTOR(dealloc, Object_dealloc),
+		SELECTOR(isEqual:, Object_eq),
 		SELECTOR(repr, Object_repr),
 		SELECTOR(wait, Object_wait),
-		SELECTOR(notify, Object_notify)
+		SELECTOR(notify, Object_notify),
+		SELECTOR(performSelector:, Object_performSelector),
+		SELECTOR(respondsToSelector:, Object_respondsToSelector)
 	),
 };

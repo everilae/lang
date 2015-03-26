@@ -1,5 +1,6 @@
 CFLAGS = -g -std=gnu11 -pthread -Wall -Werror -pedantic -I. -I../ -I../include -I../utils -O2
 VALGRIND = $(shell which valgrind)
+VALGRIND_OPTS ?= -q
 
 vpath %.h ../include:../utils
 vpath %.c ../objects:../utils
@@ -13,7 +14,7 @@ tests: test_lang test_map test_trie test_list
 
 test_%: test_%.o
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
-	$(VALGRIND) -q ./$@
+	$(VALGRIND) $(VALGRIND_OPTS) ./$@
 	$(RM) $@
 
 test_lang: object.o str.o int.o bool.o selector.o type.o

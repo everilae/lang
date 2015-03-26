@@ -2,11 +2,18 @@
 
 Type IntType;
 
-void
-Int_new(Object* this_, va_list ap)
+static Object*
+Int_init(Int* this, SEL cmd)
 {
-	Int* this = IntPtr(this_);
-	this->value = va_arg(ap, __typeof__(this->value));
+	this->value = 0;
+	return ObPtr(this);
+}
+
+static Object*
+Int_initWithInt(Int* this, SEL cmd, int i)
+{
+	this->value = i;
+	return ObPtr(this);
 }
 
 static Object*
@@ -16,7 +23,7 @@ Int_eq(Int* this, SEL cmd, Object* other)
 		return False;
 	}
 
-	return Bool(IntPtr(this)->value == IntPtr(other)->value);
+	return Bool(this->value == IntPtr(other)->value);
 }
 
 static Object*
@@ -34,7 +41,7 @@ Int_ ## name_(Int* this, SEL cmd, Object* other) \
 		ABORT("ERROR: unsupported operand types for '" #name_ "': '%s' and '%s'", \
 		      (ObType(this)->name), (ObType(other)->name)); \
 	} \
-	return new(&IntType, this->value op IntPtr(other)->value); \
+	return Int_initWithInt(IntPtr(msg_send(ObPtr(&IntType), selector(alloc))), selector(initWithInt:), this->value op IntPtr(other)->value); \
 }
 
 INT_OP(add, +)
@@ -50,11 +57,10 @@ Type IntType = {
 
 	.size = sizeof(Int),
 
-	.new = Int_new,
-	.delete = Object_delete,
-
 	.selectors = SELECTOR_LIST(
-		SELECTOR(eq, Int_eq),
+		SELECTOR(init, Int_init),
+		SELECTOR(initWithInt:, Int_initWithInt),
+		SELECTOR(isEqual:, Int_eq),
 		SELECTOR(repr, Int_repr),
 		SELECTOR(add, Int_add),
 		SELECTOR(sub, Int_sub),

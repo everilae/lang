@@ -1,17 +1,23 @@
 #include <lang.h>
 
-static void
-Type_new(Object* this_, va_list ap)
+static Object*
+Type_alloc(Type* class, SEL cmd)
 {
-	Type* this = (Type*) this_;
+	if (!class) {
+		return NULL;
+	}
 
-	this->name = va_arg(ap, const char*);
-	this->base = va_arg(ap, Type*);
-	this->size = va_arg(ap, size_t);
+	Object* o = calloc(1, class->size);
+	if (!o) {
+		return NULL;
+	}
+
+	ObType(o) = class;
+	return o;
 }
 
 static void
-Type_repr(Object* this, va_list ap)
+Type_repr(Object* this, SEL cmd)
 {
 	printf("<type '%s'>\n", ((Type*) this)->name);
 }
@@ -24,10 +30,8 @@ Type TypeType = {
 
 	.size = sizeof(Type),
 
-	.new = Type_new,
-	.delete = Object_delete,
-
 	.selectors = SELECTOR_LIST(
+		SELECTOR(alloc, Type_alloc),
 		SELECTOR(repr, Type_repr)
 	)
 };
