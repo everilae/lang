@@ -4,11 +4,11 @@
 
 Type StrType;
 
-static void
-Str_new(Object* this_, va_list ap)
+static Object* 
+Str_initWithCString(Str* this, SEL cmd, const char* cstr)
 {
-	Str* this = StrPtr(this_);
-	this->value = va_arg(ap, __typeof__(this->value));
+	this->value = cstr;
+	return ObPtr(this);
 }
 
 static Object*
@@ -35,11 +35,9 @@ Type StrType = {
 
 	.size = sizeof(Str),
 
-	.new = Str_new,
-	.delete = Object_delete,
-
-	.selectors = SELECTOR_LIST( 
-		SELECTOR(eq, Str_eq),
+	.selectors = SELECTOR_LIST(
+		SELECTOR(initWithCString:, Str_initWithCString),
+		SELECTOR(isEqual:, Str_eq),
 		SELECTOR(repr, Str_repr)
 	),
 };

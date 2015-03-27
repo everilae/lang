@@ -1,9 +1,9 @@
 #include <lang.h>
 
 static Object*
-Bool_repr(Object* this, va_list ap)
+Bool_repr(Int* this, SEL cmd)
 {
-	if (IntPtr(this)->value) {
+	if (this->value) {
 		printf("True\n");
 	} else {
 		printf("False\n");
@@ -18,9 +18,6 @@ Type BoolType = {
 	.name = "bool",
 
 	.size = sizeof(Int),
-
-	.new = Int_new,
-	.delete = Object_delete,
 
 	.selectors = SELECTOR_LIST(
 		SELECTOR(repr, Bool_repr)

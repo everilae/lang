@@ -5,13 +5,18 @@
 void
 test_int()
 {
-	Object* i = new(&IntType, 1);
-	assert(i != NULL);
+	Object* i = msg_send(msg_send(ObPtr(&IntType), selector(alloc)), selector(init));
+	assert(i);
+	assert(((Int*) i)->value == 0);
+	msg_send(i, selector(dealloc));
 
-	Object* i2 = new(&IntType, 123);
-	assert(i2 != NULL);
+	i = msg_send(msg_send(ObPtr(&IntType), selector(alloc)), selector(initWithInt:), 1);
+	assert(i);
 
-	Object* r = msg_send(i, selector(eq), i);
+	Object* i2 = msg_send(msg_send(ObPtr(&IntType), selector(alloc)), selector(initWithInt:), 123);
+	assert(i2);
+
+	Object* r = msg_send(i, selector(isEqual:), i);
 	assert(r == True);
 
 	msg_send(r, selector(repr));
@@ -23,24 +28,31 @@ test_int()
 
 	msg_send(r, selector(repr));
 
-	delete(i2);
-	delete(i);
+	msg_send(r, selector(dealloc));
+	msg_send(i2, selector(dealloc));
+	msg_send(i, selector(dealloc));
 }
 
 void
 test_str()
 {
-	Object* s = new(&StrType, "Hello, World!");
+	Object* s = msg_send(msg_send(ObPtr(&StrType), selector(alloc)), selector(initWithCString:), "Hello, World!");
 	assert(s);
 
-	Object* s2 = new(&StrType, "Hello, Mars!");
+	Object* s2 = msg_send(msg_send(ObPtr(&StrType), selector(alloc)), selector(initWithCString:), "Hello, Mars!");
 	assert(s2);
 
 	msg_send(s, selector(repr));
 	msg_send(s2, selector(repr));
 
-	delete(s2);
-	delete(s);
+	msg_send(s2, selector(dealloc));
+	msg_send(s, selector(dealloc));
+}
+
+void
+test_type()
+{
+	assert(msg_send(ObPtr(&TypeType), selector(respondsToSelector:), selector(alloc)) == True);
 }
 
 void
@@ -55,6 +67,7 @@ test_monitor()
 int
 main(void)
 {
+	test_type();
 	test_int();
 	test_str();
 	test_monitor();

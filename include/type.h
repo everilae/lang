@@ -10,14 +10,7 @@ typedef struct Type {
 	OBJECT_HEAD;
 	struct Type* base;
 	const char* name;
-
 	size_t size;
-
-	/* life and death */
-	void (*new)(Object* this, va_list ap);
-	void (*delete)(Object* this);
-	void* (*alloc)(struct Type*);
-
 	Selector *selectors;
 } Type;
 
