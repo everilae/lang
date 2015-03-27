@@ -2,16 +2,19 @@
 #define OBJECT_H 1
 
 #include <stdarg.h>
+/* #include <stdatomic.h> */
+#define _Atomic
+#define ATOMIC_VAR_INIT(v) v
 
 struct Monitor;
 
 #define OBJECT_HEAD \
 	struct Type* class; \
-	struct Monitor* monitor
+	_Atomic struct Monitor* monitor
 
 #define OBJECT_INITIALIZER(cls) \
 	.class = &cls, \
-	.monitor = NULL
+	.monitor = ATOMIC_VAR_INIT(NULL)
 
 typedef struct Type Type;
 

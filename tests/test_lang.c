@@ -43,10 +43,20 @@ test_str()
 	delete(s);
 }
 
+void
+test_monitor()
+{
+	Object* o = new(&ObjectType);
+	SYNCHRONIZED(o) {
+		printf("synchronized\n");
+	}
+}
+
 int
 main(void)
 {
 	test_int();
 	test_str();
+	test_monitor();
 	return 0;
 }

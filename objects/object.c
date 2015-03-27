@@ -142,7 +142,8 @@ Object_repr(Object* this, SEL cmd)
 static Object*
 Object_wait(Object* this, SEL cmd)
 {
-	if (this->monitor) {
+	Monitor* mon;
+	if ((mon = this->monitor)) {
 	}
 	return NULL;
 }
@@ -150,7 +151,8 @@ Object_wait(Object* this, SEL cmd)
 static Object*
 Object_notify(Object* this, SEL cmd)
 {
-	if (this->monitor) {
+	Monitor* mon;
+	if ((mon = this->monitor)) {
 	}
 	return NULL;
 }
