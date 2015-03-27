@@ -1,5 +1,4 @@
-CFLAGS = -g -std=gnu11 -pthread -Wall -Werror -pedantic -I. -I../ -I../include -I../utils -O2
-#-fsanitize=undefined
+CFLAGS = -g -std=gnu11 -pthread -Wall -Werror -pedantic -I. -I../ -I../include -I../utils -O2 -fsanitize=undefined
 
 VALGRIND_OPTS ?= -q
 VALGRIND ?= $(shell which valgrind) $(VALGRIND_OPTS)
