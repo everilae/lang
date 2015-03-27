@@ -8,7 +8,7 @@ typedef struct {
 	const char *value;
 } Str;
 
-extern Type StrType;
+extern struct class StrType;
 
 #define StrPtr(p) ((Str*) p)
 

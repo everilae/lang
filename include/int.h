@@ -8,7 +8,7 @@ typedef struct {
 	int value;
 } Int;
 
-extern Type IntType;
+extern struct class IntType;
 
 #define IntPtr(p) ((Int*) p)
 

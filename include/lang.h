@@ -2,15 +2,15 @@
 #define LANG_H 1
 
 #include <object.h>
-#include <selector.h>
+#include <method.h>
 #include <type.h>
 #include <monitor.h>
 #include <int.h>
 #include <bool.h>
 #include <str.h>
 
-extern Object* msg_send(Object* obj, SEL cmd, ...);
-extern IMP get_implementation(Type* class, SEL cmd);
+extern id msgSend(id obj, SEL cmd, ...);
+extern IMP class_getMethodImplementation(Class class, SEL cmd);
 
 #include <stdio.h>
 #include <stdlib.h>

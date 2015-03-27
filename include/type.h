@@ -4,18 +4,19 @@
 #include <stddef.h>
 
 #include <object.h>
-#include <selector.h>
 
-typedef struct Type {
+typedef struct class {
 	OBJECT_HEAD;
-	struct Type* base;
+	struct class* super;
 	const char* name;
 	size_t size;
-	Selector *selectors;
-} Type;
+	struct method* methods;
+}* Class;
 
-extern Type TypeType;
+extern struct class TypeType;
 
-#define ObType(p) (ObPtr(p)->class)
+#define class_getName(cls) ((cls)->name)
+#define class_getSuperClass(cls) ((cls)->super)
+#define class_getInstanceSize(cls) ((cls)->size)
 
 #endif

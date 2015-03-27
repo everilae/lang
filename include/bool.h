@@ -3,11 +3,10 @@
 
 #include <object.h>
 
-extern Type BoolType;
-extern Object* True;
-extern Object* False;
-extern void init_bool_type();
+extern struct class BoolType;
+extern id YES;
+extern id NO;
 
-#define Bool(expr) ((expr) ? True : False)
+#define Bool(expr) ((expr) ? YES : NO)
 
 #endif

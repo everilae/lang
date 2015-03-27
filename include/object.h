@@ -1,29 +1,23 @@
 #ifndef OBJECT_H
 #define OBJECT_H 1
 
-/* #include <stdatomic.h> */
-#define _Atomic
-#define ATOMIC_VAR_INIT(v) v
-
-struct Monitor;
+#include <stdatomic.h>
 
 #define OBJECT_HEAD \
-	struct Type* class; \
-	_Atomic struct Monitor* monitor
+	struct class* isa; \
+	_Atomic (struct monitor*) monitor
 
 #define OBJECT_INITIALIZER(cls) \
-	.class = &cls, \
+	.isa = &cls, \
 	.monitor = ATOMIC_VAR_INIT(NULL)
 
-typedef struct Type Type;
-
-typedef struct {
+typedef struct object {
 	OBJECT_HEAD;
-} Object;
+}* id;
 
-extern Type ObjectType;
+extern struct class ObjectType;
 
-#define ObPtr(p) ((Object*) (p))
-#define ObType(p) (ObPtr(p)->class)
-
+#define ObPtr(obj) ((id) (obj))
+#define object_getClass(obj) (((id) (obj))->isa)
+#define object_setClass(obj, cls) (((id) (obj))->isa = cls)
 #endif

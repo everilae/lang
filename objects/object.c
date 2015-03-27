@@ -3,32 +3,30 @@
 #include <lang.h>
 #include <debug.h>
 
-/**
- * Called from asm.
- */
 IMP
-get_implementation(Type* class, SEL cmd)
+class_getMethodImplementation(Class class, SEL cmd)
 {
 	register IMP imp = NULL;
 	while (class && !imp) {
 		for (
-			register Selector* sel = class->selectors;
-			sel && sel->class;
-			sel++
+			register Method meth = class->methods;
+			meth && object_getClass(meth); /* end-of-method-list is a NULL struct kindof */
+			meth++
 		) {
-			if (cmd == sel->cmd) {
-				imp = sel->imp;
+			if (cmd == method_getName(meth)) {
+				imp = method_getImplementation(meth);
 				break;
 			}
 		}
-		class = class->base;
+		class = class_getSuperClass(class);
 	}
 
 	return imp;
 }
 
-Object*
-msg_send(Object* obj, SEL cmd, ...)
+#if 0
+id
+msgSend(register id obj, register SEL cmd, ...)
 {
 	if (!obj) {
 		goto noimpl;
@@ -46,7 +44,7 @@ msg_send(Object* obj, SEL cmd, ...)
 		::
 	);
 
-	register IMP imp = get_implementation(ObType(obj), cmd);
+	register IMP imp = class_getMethodImplementation(object_getClass(obj), cmd);
 
 	asm volatile (
 		/* Restore args */
@@ -76,79 +74,84 @@ msg_send(Object* obj, SEL cmd, ...)
 noimpl:
 	return NULL;
 }
+#endif
 
-static Object*
-Object_init(Object* this)
+static id
+Object_init(id this)
 {
+	Monitor mon = (Monitor) msgSend(msgSend(ObPtr(&MonitorType), SELECTOR(alloc)), SELECTOR(init));
+	atomic_store(&this->monitor, mon);
 	return this;
 }
 
-static Object*
-Object_dealloc(Object* this)
+static id
+Object_dealloc(id this)
 {
 	free(this);
 	return NULL;
 }
 
-static Object*
-Object_eq(Object* this, SEL cmd, Object* other)
+static id
+Object_eq(id this, SEL cmd, id other)
 {
 	return Bool(this == other);
 }
 
-static Object*
-Object_repr(Object* this, SEL cmd)
+static id
+Object_repr(id this, SEL cmd)
 {
-	printf("<%s object at %p>\n", ObType(this)->name, (void*) this);
+	printf("<%s object at %p>\n", class_getName(object_getClass(this)), (void*) this);
 	return NULL;
 }
 
-static Object*
-Object_wait(Object* this, SEL cmd)
+static id
+Object_wait(id this, SEL cmd)
 {
-	Monitor* mon;
-	if ((mon = this->monitor)) {
+	Monitor mon;
+	if ((mon = atomic_load(&this->monitor))) {
 	}
 	return NULL;
 }
 
-static Object*
-Object_notify(Object* this, SEL cmd)
+static id
+Object_notify(id this, SEL cmd)
 {
-	Monitor* mon;
-	if ((mon = this->monitor)) {
+	Monitor mon;
+	if ((mon = atomic_load(&this->monitor))) {
 	}
 	return NULL;
 }
 
-static Object*
-Object_performSelector(Object* this, SEL cmd, SEL sel)
+static id
+Object_performSelector(id this, SEL cmd, SEL sel)
 {
-	return msg_send(this, sel);
+	return msgSend(this, sel);
 }
 
-static Object*
-Object_respondsToSelector(Object* this, SEL cmd, SEL sel)
+#include <assert.h>
+
+static id
+Object_respondsToSelector(id this, SEL cmd, SEL sel)
 {
-	return Bool(get_implementation(ObType(this), sel));
+	return Bool(class_getMethodImplementation(object_getClass(this), sel));
 }
 
-Type ObjectType = {
+struct class ObjectType = {
 	OBJECT_INITIALIZER(TypeType),
 
-	.base = NULL,
+	.super = NULL,
 	.name = "object",
 
-	.size = sizeof(Object),
+	.size = sizeof(struct object),
 
-	.selectors = SELECTOR_LIST(
-		SELECTOR(init, Object_init),
-		SELECTOR(dealloc, Object_dealloc),
-		SELECTOR(isEqual:, Object_eq),
-		SELECTOR(repr, Object_repr),
-		SELECTOR(wait, Object_wait),
-		SELECTOR(notify, Object_notify),
-		SELECTOR(performSelector:, Object_performSelector),
-		SELECTOR(respondsToSelector:, Object_respondsToSelector)
+	.methods = METHOD_LIST(
+		METHOD(init, Object_init),
+		METHOD(dealloc, Object_dealloc),
+		METHOD(isEqual:, Object_eq),
+		METHOD(repr, Object_repr),
+		METHOD(wait, Object_wait),
+		METHOD(notify, Object_notify),
+		METHOD(performSelector:, Object_performSelector),
+		METHOD(respondsToSelector:, Object_respondsToSelector)
 	),
 };

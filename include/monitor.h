@@ -6,7 +6,7 @@
 
 #include <object.h>
 
-typedef struct Monitor {
+typedef struct monitor {
 	OBJECT_HEAD;
 	/* Mutex for guarding Monitor access */
 	pthread_mutex_t mutex;
@@ -16,9 +16,9 @@ typedef struct Monitor {
 	bool locked;
 	/* Current owner, if any (undefined when locked == false) */
 	pthread_t owner;
-} Monitor;
+}* Monitor;
 
-extern Type MonitorType;
+extern struct class MonitorType;
 
 #define MONITOR_INITIALIZER { \
 	OBJECT_INITIALIZER(MonitorType), \
@@ -27,9 +27,9 @@ extern Type MonitorType;
 	.locked = false }
 
 /* Optimizing compilers should see that this will run 1. and only 1. */
-#define SYNCHRONIZED(o) \
-	for (int __synchronized_running = (msg_send(ObPtr(ObPtr(o)->monitor), selector(enter)), 1); \
+#define SYNCHRONIZED(obj) \
+	for (int __synchronized_running = (msgSend((id) atomic_load(&(((id) (obj))->monitor)), SELECTOR(enter)), 1); \
 	     __synchronized_running; \
-	     __synchronized_running = (msg_send(ObPtr(ObPtr(o)->monitor), selector(exit)), 0))
+	     __synchronized_running = (msgSend((id) atomic_load(&(((id) (obj))->monitor)), SELECTOR(exit)), 0))
 
 #endif

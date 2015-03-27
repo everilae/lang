@@ -2,20 +2,20 @@
 
 #include <lang.h>
 
-Type StrType;
+struct class StrType;
 
-static Object* 
+static id 
 Str_initWithCString(Str* this, SEL cmd, const char* cstr)
 {
 	this->value = cstr;
 	return ObPtr(this);
 }
 
-static Object*
-Str_eq(Str* this, SEL cmd, Object* other)
+static id
+Str_eq(Str* this, SEL cmd, id other)
 {
-	if (ObType(other) != &StrType) {
-		return False;
+	if (object_getClass(other) != &StrType) {
+		return NO;
 	}
 
 	return Bool(!strcmp(this->value, StrPtr(other)->value));
@@ -27,17 +27,17 @@ Str_repr(Str* this, SEL cmd)
 	printf("\"%s\"\n", this->value);
 }
 
-Type StrType = {
+struct class StrType = {
 	OBJECT_INITIALIZER(TypeType),
 
-	.base = &ObjectType,
+	.super = &ObjectType,
 	.name = "str",
 
 	.size = sizeof(Str),
 
-	.selectors = SELECTOR_LIST(
-		SELECTOR(initWithCString:, Str_initWithCString),
-		SELECTOR(isEqual:, Str_eq),
-		SELECTOR(repr, Str_repr)
+	.methods = METHOD_LIST(
+		METHOD(initWithCString:, Str_initWithCString),
+		METHOD(isEqual:, Str_eq),
+		METHOD(repr, Str_repr)
 	),
 };

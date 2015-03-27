@@ -1,6 +1,6 @@
 #include <lang.h>
 
-static Object*
+static id
 Bool_repr(Int* this, SEL cmd)
 {
 	if (this->value) {
@@ -11,25 +11,25 @@ Bool_repr(Int* this, SEL cmd)
 	return NULL;
 }
 
-Type BoolType = {
+struct class BoolType = {
 	OBJECT_INITIALIZER(TypeType),
 
-	.base = &IntType,
+	.super = &IntType,
 	.name = "bool",
 
 	.size = sizeof(Int),
 
-	.selectors = SELECTOR_LIST(
-		SELECTOR(repr, Bool_repr)
+	.methods = METHOD_LIST(
+		METHOD(repr, Bool_repr)
 	),
 };
 
-Object* True = ObPtr(&((Int) {
+id YES = (id) &((Int) {
 	OBJECT_INITIALIZER(BoolType),
 	.value = 1,
-}));
+});
 
-Object* False = ObPtr(&((Int) {
+id NO = (id) &((Int) {
 	OBJECT_INITIALIZER(BoolType),
 	.value = 0,
-}));
+});

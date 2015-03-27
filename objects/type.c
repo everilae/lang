@@ -1,37 +1,37 @@
 #include <lang.h>
 
-static Object*
-Type_alloc(Type* class, SEL cmd)
+static id
+Type_alloc(Class class, SEL cmd)
 {
 	if (!class) {
 		return NULL;
 	}
 
-	Object* o = calloc(1, class->size);
+	id o = calloc(1, class_getInstanceSize(class));
 	if (!o) {
 		return NULL;
 	}
 
-	ObType(o) = class;
+	object_setClass(o, class);
 	return o;
 }
 
 static void
-Type_repr(Object* this, SEL cmd)
+Type_repr(Class this, SEL cmd)
 {
-	printf("<type '%s'>\n", ((Type*) this)->name);
+	printf("<type '%s'>\n", class_getName(this));
 }
 
-Type TypeType = {
+struct class TypeType = {
 	OBJECT_INITIALIZER(TypeType),
 
-	.base = &ObjectType,
+	.super = &ObjectType,
 	.name = "type",
 
-	.size = sizeof(Type),
+	.size = sizeof(struct class),
 
-	.selectors = SELECTOR_LIST(
-		SELECTOR(alloc, Type_alloc),
-		SELECTOR(repr, Type_repr)
+	.methods = METHOD_LIST(
+		METHOD(alloc, Type_alloc),
+		METHOD(repr, Type_repr)
 	)
 };

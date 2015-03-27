@@ -1,32 +1,32 @@
 #include <lang.h>
 
-Type IntType;
+struct class IntType;
 
-static Object*
+static id
 Int_init(Int* this, SEL cmd)
 {
 	this->value = 0;
 	return ObPtr(this);
 }
 
-static Object*
+static id
 Int_initWithInt(Int* this, SEL cmd, int i)
 {
 	this->value = i;
 	return ObPtr(this);
 }
 
-static Object*
-Int_eq(Int* this, SEL cmd, Object* other)
+static id
+Int_eq(Int* this, SEL cmd, id other)
 {
-	if (ObType(other) != &IntType) {
-		return False;
+	if (object_getClass(other) != &IntType) {
+		return NO;
 	}
 
 	return Bool(this->value == IntPtr(other)->value);
 }
 
-static Object*
+static id
 Int_repr(Int* this, SEL cmd)
 {
 	printf("%d\n", this->value);
@@ -34,14 +34,14 @@ Int_repr(Int* this, SEL cmd)
 }
 
 #define INT_OP(name_, op) \
-static Object* \
-Int_ ## name_(Int* this, SEL cmd, Object* other) \
+static id \
+Int_ ## name_(Int* this, SEL cmd, id other) \
 { \
-	if (ObType(other) != &IntType) { \
+	if (object_getClass(other) != &IntType) { \
 		ABORT("ERROR: unsupported operand types for '" #name_ "': '%s' and '%s'", \
-		      (ObType(this)->name), (ObType(other)->name)); \
+		      (object_getClass(this)->name), (object_getClass(other)->name)); \
 	} \
-	return Int_initWithInt(IntPtr(msg_send(ObPtr(&IntType), selector(alloc))), selector(initWithInt:), this->value op IntPtr(other)->value); \
+	return Int_initWithInt(IntPtr(msgSend(ObPtr(&IntType), SELECTOR(alloc))), SELECTOR(initWithInt:), this->value op IntPtr(other)->value); \
 }
 
 INT_OP(add, +)
@@ -49,22 +49,22 @@ INT_OP(sub, -)
 INT_OP(mul, *)
 INT_OP(div, /)
 
-Type IntType = {
+struct class IntType = {
 	OBJECT_INITIALIZER(TypeType),
 
-	.base = &ObjectType,
+	.super = &ObjectType,
 	.name = "int",
 
 	.size = sizeof(Int),
 
-	.selectors = SELECTOR_LIST(
-		SELECTOR(init, Int_init),
-		SELECTOR(initWithInt:, Int_initWithInt),
-		SELECTOR(isEqual:, Int_eq),
-		SELECTOR(repr, Int_repr),
-		SELECTOR(add, Int_add),
-		SELECTOR(sub, Int_sub),
-		SELECTOR(mul, Int_mul),
-		SELECTOR(div, Int_div)
+	.methods = METHOD_LIST(
+		METHOD(init, Int_init),
+		METHOD(initWithInt:, Int_initWithInt),
+		METHOD(isEqual:, Int_eq),
+		METHOD(repr, Int_repr),
+		METHOD(add, Int_add),
+		METHOD(sub, Int_sub),
+		METHOD(mul, Int_mul),
+		METHOD(div, Int_div)
 	),
 };
